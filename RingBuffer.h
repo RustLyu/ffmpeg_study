@@ -9,6 +9,7 @@ public:
 	RingBuffer(int size):capacity_(size)
 	{
 		buffer_ = new char[capacity_];
+		memset(buffer_, 0, capacity_);
 		w_size_ = 0;
 		r_size_ = 0;
 	}
@@ -28,7 +29,7 @@ public:
 	int read(char* dst, int len) {
 		if (size() > len)
 		{
-			if (w_size_ >= r_size_)
+			if ((capacity_ - read_index()) >= len)
 			{
 				memcpy(dst, buffer_ + read_index(), len);
 			}
@@ -48,6 +49,17 @@ public:
 	}
 	bool empty() { return w_size_ == r_size_; }
 
+	int size() {
+		if (w_size_ >= r_size_)
+		{
+			return w_size_ - r_size_;
+		}
+		else
+		{
+			return capacity_ - r_size_ + w_size_;
+		}
+	}
+
 private:
 	int write_index() {
 		return w_size_ % capacity_;
@@ -58,17 +70,6 @@ private:
 
 	int idle_size() {
 		return capacity_ - size();
-	}
-
-	int size() {
-		if (w_size_ >= r_size_)
-		{
-			return w_size_ - r_size_;
-		}
-		else
-		{
-			return capacity_ - r_size_ + w_size_;
-		}
 	}
 
 
