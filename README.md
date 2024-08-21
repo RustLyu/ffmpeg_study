@@ -8,3 +8,5 @@
 #SDL2-2.30.5
 
 #cmake
+
+#dsshow ：https://github.com/rdp/screen-capture-recorder-to-video-windows-free/releases/tag/0.13.1
