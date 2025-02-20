@@ -5,7 +5,7 @@
 #ffmpeg 
   version: ffmpeg version N-116211-g9fb8d13d56-20240709
 
-#SDL2-2.30.5
+#SDL2-2.30.5 :https://github.com/libsdl-org/SDL/releases/tag/release-2.30.5
 
 #cmake
 
