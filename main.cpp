@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
 
     auto now = std::chrono::high_resolution_clock::now();
 
-
-    std::string filename = "./dk.wma";
+    std::string filename = "./inhuman.mp3";
+    //std::string filename = "./juren-30s.wav";
     // audio.aac
     //std::string filename = "./audio.aac";
 
@@ -41,25 +41,25 @@ int main(int argc, char* argv[]) {
     //FFmpegStudyEncode::encode("./333.mp4");
     //FFmpegStudyPlayer::player(filename.c_str());
     //FFmpegStudyPlayer::player(filename.c_str());
-    //FFmpegStudyPlayer_Audio::player(filename.c_str());
+    FFmpegStudyPlayer_Audio::player(filename.c_str());
 
 
 
-    VideoState *vs = new VideoState();
+    //VideoState *vs = new VideoState();
 
-    Demuxer* demuxer = new Demuxer(filename.c_str());
-    demuxer->set_video_state(vs);
+    //Demuxer* demuxer = new Demuxer(filename.c_str());
+    //demuxer->set_video_state(vs);
 
-    AudioDecoder* audio_decoder = new AudioDecoder();
-    audio_decoder->set_video_state(vs);
+    //AudioDecoder* audio_decoder = new AudioDecoder();
+    //audio_decoder->set_video_state(vs);
 
-    AudioRender* audio_render = new AudioRender();
-    audio_render->set_video_state(vs);
+    //AudioRender* audio_render = new AudioRender();
+    //audio_render->set_video_state(vs);
 
-    demuxer->start();
-    vs->start();
-    audio_decoder->start();
-    audio_render->start();
+    //demuxer->start();
+    //vs->start();
+    //audio_decoder->start();
+    //audio_render->start();
 
     while (1)
     {

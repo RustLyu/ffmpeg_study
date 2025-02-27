@@ -27,7 +27,7 @@ public:
 		return s;
 	}
 	int read(char* dst, int len) {
-		if (size() > len)
+		if (size() >= len)
 		{
 			if ((capacity_ - read_index()) >= len)
 			{
@@ -50,10 +50,12 @@ public:
 	bool empty() { return w_size_ == r_size_; }
 
 	int size() {
+		// --------------r-----------------------w-------------------------//
 		if (w_size_ >= r_size_)
 		{
 			return w_size_ - r_size_;
 		}
+		// --------------w-----------------------r-------------------------//
 		else
 		{
 			return capacity_ - r_size_ + w_size_;

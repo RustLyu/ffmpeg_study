@@ -3,6 +3,8 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <mutex>
+#include <condition_variable>
 
 #include "playaudio.h"
 
@@ -15,6 +17,12 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 }
+
+#include "RingBuffer.h"
+
+
+std::mutex m_;
+std::condition_variable cv_;
 
 AVFormatContext* OpenAudioFromFile(const std::string& file_path) {
     AVFormatContext* format_ctx = avformat_alloc_context();
@@ -33,16 +41,25 @@ struct AudioData {
 };
 
 void audio_callback_audio(void* userdata, Uint8* stream, int len) {
-    AudioData* audio = (AudioData*)userdata;
-    if (audio->length <= 0)
+    RingBuffer* audio = (RingBuffer*)userdata;
+    /*if (audio->size() <= 0)
     {
         return;
-    }
-    len = (len > audio->length ? audio->length : len);
+    }*/
+    std::unique_lock<std::mutex> lock_(m_);
+    cv_.wait(lock_, [&]() {
+        return audio->size() >= len;
+        });
+    len = (len > audio->size() ? audio->size() : len);
     SDL_memset(stream, 0, len);
-    SDL_MixAudioFormat(stream, (uint8_t*)audio->pos, AUDIO_S16SYS, len, SDL_MIX_MAXVOLUME);
-    audio->pos += len;
-    audio->length -= len;
+    std::cout << "read:" << len << std::endl;
+    audio->read((char*)stream, len);
+    if(audio->size() < 5 * 4096)
+        cv_.notify_all();
+    //SDL_MixAudioFormat(stream, (uint8_t*)audio->pos, AUDIO_S16SYS, len, SDL_MIX_MAXVOLUME);
+    //audio->pos += len;
+    //audio->length -= len;
+    //std::cout << "read:" << len << " last:" << audio->length << std::endl;
 }
 
 int FFmpegStudyPlayer_Audio::player(const char* path) {
@@ -93,11 +110,11 @@ int FFmpegStudyPlayer_Audio::player(const char* path) {
     }
 
     code_ctx = avcodec_alloc_context3(audio_codec);
-    if (avcodec_parameters_to_context(code_ctx, code_param) != 0) {
+    if (avcodec_parameters_to_context(code_ctx, code_param) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't copy codec context");
         return -1;
     }
-
+    code_ctx->pkt_timebase = fmt_ctx->streams[audioStream]->time_base;
     if (avcodec_open2(code_ctx, audio_codec, NULL) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open decoder!\n");
         return -1;
@@ -122,31 +139,31 @@ int FFmpegStudyPlayer_Audio::player(const char* path) {
         printf("Audio Device %d: %s\n", i, SDL_GetAudioDeviceName(i, 0));
     }
 
+    av_log(nullptr, 0, "123");
     SDL_AudioSpec wanted_spec, spec;
     wanted_spec.freq = code_ctx->sample_rate;
     wanted_spec.format = AUDIO_S16SYS;
     wanted_spec.channels = code_ctx->ch_layout.nb_channels;
     wanted_spec.silence = 0;
     wanted_spec.samples = 1024;
-    wanted_spec.callback = nullptr;
     wanted_spec.callback = audio_callback_audio;
-    AudioData audio_data = { nullptr, 0 };
-    wanted_spec.userdata = &audio_data;
+    //AudioData audio_data = { nullptr, 0 };
+    RingBuffer buffer(192000);
+    wanted_spec.userdata = &buffer;
 
-    SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(0, 0), false, &wanted_spec, &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
+    SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(NULL, 0, &wanted_spec, 
+        &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
 
     au_convert_ctx = swr_alloc();
     swr_alloc_set_opts2(&au_convert_ctx, &code_ctx->ch_layout, AV_SAMPLE_FMT_S16,
         code_ctx->sample_rate, &code_ctx->ch_layout, code_ctx->sample_fmt,
         code_ctx->sample_rate, 0, nullptr);
-
     swr_init(au_convert_ctx);
 
     SDL_PauseAudioDevice(device_id, 0);
 
-    uint8_t* out_buffer = (uint8_t*)av_malloc(192000);
+    uint8_t* out_buffer = (uint8_t*)av_malloc(19200000);
     int out_buffer_size;
-    
     fflush(stdout);
 
     while (av_read_frame(fmt_ctx, packet) >= 0) {
@@ -159,22 +176,36 @@ int FFmpegStudyPlayer_Audio::player(const char* path) {
                 else if (ret < 0) {
                     break;
                 }
-                int dst_nb_samples = swr_get_out_samples(au_convert_ctx, audio_frame->nb_samples);
-                out_buffer_size = av_samples_get_buffer_size(NULL, code_ctx->ch_layout.nb_channels,
+                std::unique_lock<std::mutex> lock_(m_);
+                cv_.wait(lock_, [&]() {
+                    return buffer.size() < 4096 * 10;
+                    });
+                memset(out_buffer, 0, 19200000);
+                //std::cout << "pts:" << audio_frame->pts << std::endl;
+                int dst_nb_samples = swr_get_out_samples(au_convert_ctx, audio_frame->nb_samples); // (int64_t)audio_frame->nb_samples * code_ctx->sample_rate / audio_frame->sample_rate + 256;
+                int out_buffer_size = av_samples_get_buffer_size(NULL, code_ctx->ch_layout.nb_channels,
                     dst_nb_samples, AV_SAMPLE_FMT_S16, 1);
+                //int out_count = (int64_t)wanted_spec.samples * code_ctx->sample_rate / audio_frame->sample_rate + 256;
                 swr_convert(au_convert_ctx, &out_buffer, out_buffer_size,
                     (const uint8_t**)audio_frame->data, audio_frame->nb_samples);
-                audio_data.pos = out_buffer;
-                audio_data.length = out_buffer_size;
-                while (audio_data.length > 0) {
-                    SDL_Delay(1);
-                }
+                //std::cout <<"len:" << audio_data.length << std::endl;
+                std::cout << "write:" << out_buffer_size << std::endl;
+                buffer.write((char*)out_buffer, out_buffer_size);
+                if (buffer.size() > 4096)
+                    cv_.notify_all();
+                /*audio_data.pos = out_buffer;
+                audio_data.length = out_buffer_size;*/
+                //while (audio_data.length > 0) {
+                    //SDL_Delay(10 * 2.5);
+                //}
             }
+            av_frame_unref(audio_frame);
         }
         av_packet_unref(packet);
     }
     SDL_Delay(300000);
     swr_free(&au_convert_ctx);
     SDL_CloseAudioDevice(device_id);
+    av_free(out_buffer);
     SDL_Quit();
 }

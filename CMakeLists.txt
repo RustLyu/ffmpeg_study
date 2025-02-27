@@ -13,6 +13,8 @@ include_directories(${FFMPEG_INCLUDE_DIR} ${SDL_INCLUDE_DIR})
 
 link_directories(${FFMPEG_LIB_DIR} ${SDL_LIB_DIR})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
+
 add_executable(MyFFmpegProject main.cpp
 	common.h
 	decode.h decode.cpp
