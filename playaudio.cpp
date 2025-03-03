@@ -42,10 +42,6 @@ struct AudioData {
 
 void audio_callback_audio(void* userdata, Uint8* stream, int len) {
     RingBuffer* audio = (RingBuffer*)userdata;
-    /*if (audio->size() <= 0)
-    {
-        return;
-    }*/
     std::unique_lock<std::mutex> lock_(m_);
     cv_.wait(lock_, [&]() {
         return audio->size() >= len;
