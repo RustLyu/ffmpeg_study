@@ -6,6 +6,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 }
+#include "RingBuffer.h"
 
 struct Buffer
 {
@@ -54,7 +55,7 @@ public:
 		return video_buffer_.pop();
 	}
 
-	Buffer* get_audio_buffer() {
+	RingBuffer* get_audio_buffer() {
 		return audio_buffer_;
 	}
 
@@ -76,7 +77,7 @@ private:
 	//AVCodec* video_codec_;
 	//int video_index_;
 	//int audio_index_;
-	Buffer* audio_buffer_;
+	RingBuffer* audio_buffer_;
 	PacketQueue<AVFrame> video_buffer_;
 };
 

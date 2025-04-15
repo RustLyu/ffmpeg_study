@@ -9,11 +9,15 @@
 
 VideoState::VideoState()
 {
-	audio_buffer_ = new Buffer();
+	audio_buffer_ = new RingBuffer(192000);
 }
 
 VideoState::~VideoState()
 {
+	if (audio_buffer_) {
+		delete audio_buffer_;
+		audio_buffer_ = nullptr;
+	}
 }
 
 int VideoState::start()

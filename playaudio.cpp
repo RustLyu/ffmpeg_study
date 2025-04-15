@@ -42,20 +42,31 @@ struct AudioData {
 
 void audio_callback_audio(void* userdata, Uint8* stream, int len) {
     RingBuffer* audio = (RingBuffer*)userdata;
+    if (!audio) {
+        SDL_memset(stream, 0, len);
+        return;
+    }
+
     std::unique_lock<std::mutex> lock_(m_);
-    cv_.wait(lock_, [&]() {
-        return audio->size() >= len;
-        });
-    len = (len > audio->size() ? audio->size() : len);
-    SDL_memset(stream, 0, len);
-    std::cout << "read:" << len << std::endl;
-    audio->read((char*)stream, len);
-    if(audio->size() < 5 * 4096)
-        cv_.notify_all();
-    //SDL_MixAudioFormat(stream, (uint8_t*)audio->pos, AUDIO_S16SYS, len, SDL_MIX_MAXVOLUME);
-    //audio->pos += len;
-    //audio->length -= len;
-    //std::cout << "read:" << len << " last:" << audio->length << std::endl;
+    // 使用非阻塞读取，避免音频卡顿
+    int read_len = audio->read((char*)stream, len, false);
+    if (read_len < 0) {
+        // 缓冲区数据不足，用静音填充
+        SDL_memset(stream, 0, len);
+        if (audio->size() < 5 * 4096) {
+            cv_.notify_all(); // 通知生产者继续生产
+        }
+        return;
+    }
+
+    if (read_len < len) {
+        // 填充剩余部分为静音
+        SDL_memset(stream + read_len, 0, len - read_len);
+    }
+
+    if (audio->size() < 5 * 4096) {
+        cv_.notify_all(); // 通知生产者继续生产
+    }
 }
 
 int FFmpegStudyPlayer_Audio::player(const char* path) {

@@ -34,7 +34,7 @@ int Demuxer::start()
 		AVPacket pkt;
 		while (av_read_frame(ctx_, &pkt) >= 0)
 		{
-			LOG("push to vs state");
+			//LOG("push to vs state");
 			vs_->push(&pkt);
 		}
 	});
