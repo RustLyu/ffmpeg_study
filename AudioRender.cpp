@@ -31,7 +31,7 @@ static void audio_callback_render(void* userdata, Uint8* stream, int len) {
     SDL_MixAudioFormat(stream, reinterpret_cast<Uint8*>(buffer.data()), AUDIO_S16SYS, len, SDL_MIX_MAXVOLUME);
 
 #ifdef _DEBUG
-    std::cout << "Audio buffer read: " << len << " bytes" << std::endl;
+    //std::cout << "Audio buffer read: " << len << " bytes" << std::endl;
 #endif
 }
 

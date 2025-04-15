@@ -25,6 +25,14 @@ add_executable(MyFFmpegProject main.cpp
 	demuxer.cpp VideoState.h
 	VideoState.cpp
 	RingBuffer.h
-	splite.h splite.cpp "AudioDecoder.cpp" "AudioDecoder.h" "render.h" "render.cpp" "VideoDecoder.cpp" "VideoDecoder.h" "AudioRender.cpp" "AudioRender.h" "CaltulateTime.cpp" "CaltulateTime.h" "logger.h")
+	splite.h splite.cpp 
+	"AudioDecoder.cpp" "AudioDecoder.h" 
+	"render.h" "render.cpp" 
+	"VideoDecoder.cpp" "VideoDecoder.h" 
+	"AudioRender.cpp" "AudioRender.h" 
+	"CaltulateTime.cpp" "CaltulateTime.h" 
+	"logger.h"
+	"VideoRender.h" "VideoRender.cpp"
+	)
 
 target_link_libraries(MyFFmpegProject avcodec avformat avutil swscale SDL2 swresample)
