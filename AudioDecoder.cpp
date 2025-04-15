@@ -38,20 +38,9 @@ void AudioDecoder::start()
         while (1)
         {
             auto buf = vs_->get_audio_buffer();
-            //std::unique_lock<std::mutex> lock(buf->m);
-            //if (buf->size != buf->read_index)
-            //    buf->cv.wait(lock, [&]() {
-            //    return buf->size == buf->read_index;
-            //        });
-            //if (buf->buffer)
-            //{
-            //    buf->size = 0;
-            //    buf->read_index = 0;
-            //}
             AVPacket pkt = vs_->pop_audio();
             avcodec_send_packet(vs_->get_audio_param().codec_ctx, &pkt);
             while (auto ret = avcodec_receive_frame(vs_->get_audio_param().codec_ctx, frame) == 0) {
-                //CaltulateTime cal("pop audio");
                 if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                     break;
                 }
@@ -74,10 +63,6 @@ void AudioDecoder::start()
                         std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 } 
                 while (write_size < 0);
-                //buf->buffer = buffer;
-                //buf->size = out_buffer_size;
-                //buf->read_index = 0;
-                //cal.end();
             }
         }});
 	th_.detach();
