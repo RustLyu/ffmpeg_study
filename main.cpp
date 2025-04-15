@@ -17,7 +17,7 @@ extern "C" {
 #include "AudioDecoder.h"
 #include "VideoDecoder.h"
 #include "AudioRender.h"
-//#include "VideoR"
+#include "VideoRender.h"
 
 int main(int argc, char* argv[]) {
     avformat_network_init();
@@ -26,13 +26,13 @@ int main(int argc, char* argv[]) {
 
     //std::string filename = "./inhuman.mp3";
     // 
-    std::string filename = "./inhuman.mp3";
+    //std::string filename = "./inhuman.mp3";
     //std::string filename = "./juren-30s.wav";
     // audio.aac
     //std::string filename = "./audio.aac";
 
     //std::string filename = "jay.mp3";
-    //std::string filename = "./test.mp4";
+    std::string filename = "./test.mp4";
     //FFmpegStudy::splite_audio_video(filename);
     //if (AVFormatContext* ctx = FFmpegStudy::open_file(filename.c_str()))
     //{
@@ -58,10 +58,19 @@ int main(int argc, char* argv[]) {
     AudioRender* audio_render = new AudioRender();
     audio_render->set_video_state(vs);
 
+    VideoDecoder* video_decoder = new VideoDecoder();
+    video_decoder->set_video_state(vs);
+
+    VideoRender* video_render = new VideoRender();
+    video_render->set_video_state(vs);
+
     demuxer->start();
     vs->start();
     audio_decoder->start();
     audio_render->start();
+
+    video_decoder->start();
+    video_render->start();
 
     while (1)
     {

@@ -9,7 +9,7 @@ template<class T>
 class PacketQueue {
 
 public:
-	PacketQueue() {}
+	PacketQueue():write_index_(0),read_index_(0){}
 	~PacketQueue() {}
 
 public:
