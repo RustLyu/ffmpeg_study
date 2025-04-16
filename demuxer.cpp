@@ -29,7 +29,6 @@ int Demuxer::start()
 	if (video_index_ == -1 && audio_index_ == -1)
 		return -1;
 	vs_->set_av_formate_ctx(ctx_);
-	AVPacket pkt;
 	th_ = std::thread([&]() {
 		AVPacket pkt;
 		while (av_read_frame(ctx_, &pkt) >= 0)

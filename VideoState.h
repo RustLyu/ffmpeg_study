@@ -2,6 +2,8 @@
 #define VIDEO_STATE_H
 
 #include "PacketQueue.h"
+#include <memory>
+#include <mutex>
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -35,6 +37,11 @@ class VideoState {
 public:
 	VideoState();
 	~VideoState();
+
+	// Prevent copying
+	VideoState(const VideoState&) = delete;
+	VideoState& operator=(const VideoState&) = delete;
+
 public:
 	int start();
 	void push(AVPacket* pkt);
@@ -63,20 +70,10 @@ public:
 
 
 private:
+	std::mutex mutex_;
 	AVFormatContext* ctx_;
 	StreamParam audio_;
 	StreamParam video_;
-	//PacketQueue<AVPacket> video_pkt_;
-	//PacketQueue<AVPacket> audio_pkt_;
-
-	//AVCodecContext* audio_ctx_;
-	//AVCodecContext* video_ctx_;
-	//AVCodecParameters* audio_param_;
-	//AVCodecParameters* video_param_;
-	//AVCodec* audio_codec_;
-	//AVCodec* video_codec_;
-	//int video_index_;
-	//int audio_index_;
 	RingBuffer* audio_buffer_;
 	PacketQueue<AVFrame> video_buffer_;
 };

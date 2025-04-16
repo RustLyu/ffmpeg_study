@@ -68,6 +68,7 @@ int AudioRender::start()
     SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(0, 0), false, &wanted_spec, 
         &spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     SDL_PauseAudioDevice(device_id, 0);
+    return 0;
 }
 
 void AudioRender::set_video_state(VideoState* vs)

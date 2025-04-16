@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 #include <chrono>
@@ -11,6 +12,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 }
+
+#define SDL_MAIN_HANDLED
 
 #include "VideoState.h"
 #include "demuxer.h"

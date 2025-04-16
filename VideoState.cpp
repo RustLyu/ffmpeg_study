@@ -8,17 +8,12 @@
 //}
 
 VideoState::VideoState()
+    : audio_buffer_(new RingBuffer(192000))
+    , ctx_(nullptr)
 {
-	audio_buffer_ = new RingBuffer(192000);
 }
 
-VideoState::~VideoState()
-{
-	if (audio_buffer_) {
-		delete audio_buffer_;
-		audio_buffer_ = nullptr;
-	}
-}
+VideoState::~VideoState() = default;
 
 int VideoState::start()
 {
@@ -56,6 +51,9 @@ int VideoState::start()
 
 void VideoState::push(AVPacket* pkt)
 {
+	std::lock_guard<std::mutex> lock(mutex_);
+	if (!pkt) return;
+
 	if (pkt->stream_index == video_.index)
 	{
 		video_.pkt_queue.push(*pkt);
@@ -64,16 +62,17 @@ void VideoState::push(AVPacket* pkt)
 	{
 		audio_.pkt_queue.push(*pkt);
 	}
-
 }
 
 AVPacket VideoState::pop_audio()
 {
+	std::lock_guard<std::mutex> lock(mutex_);
 	return audio_.pkt_queue.pop();
 }
 
 AVPacket VideoState::pop_video()
 {
+	std::lock_guard<std::mutex> lock(mutex_);
 	return video_.pkt_queue.pop();
 }
 
@@ -85,10 +84,12 @@ AVPacket VideoState::pop_video()
 
 void VideoState::push_video(AVFrame& f)
 {
+	std::lock_guard<std::mutex> lock(mutex_);
 	video_buffer_.push(f);
 }
 
 void VideoState::set_av_formate_ctx(AVFormatContext* ctx)
 {
+	std::lock_guard<std::mutex> lock(mutex_);
 	ctx_ = ctx;
 }
