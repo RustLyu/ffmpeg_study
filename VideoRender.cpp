@@ -22,7 +22,7 @@ void VideoRender::start()
     if (running_) return;
 
     auto codec_ctx = vs_->get_video_param().codec_ctx;
-    win_ = SDL_CreateWindow("Video Player", SDL_WINDOWPOS_UNDEFINED,
+    win_ = SDL_CreateWindow("Real player by rust.lyu", SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED, codec_ctx->width, codec_ctx->height, 
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!win_) return;
