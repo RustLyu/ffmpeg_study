@@ -45,8 +45,8 @@ public:
 public:
 	int start();
 	void push(AVPacket* pkt);
-	AVPacket pop_audio();
-	AVPacket pop_video();
+	AVPacket pop_audio_pkt();
+	AVPacket pop_video_pkt();
 	
 	//void push_audio(uint8_t* f, int size);
 	void push_video(AVFrame& f);
@@ -58,9 +58,7 @@ public:
 		return video_;
 	}
 
-	const AVFrame& get_video_frame() {
-		return video_buffer_.pop();
-	}
+	const AVFrame& get_video_frame();
 
 	RingBuffer* get_audio_buffer() {
 		return audio_buffer_;
@@ -70,7 +68,6 @@ public:
 
 
 private:
-	std::mutex mutex_;
 	AVFormatContext* ctx_;
 	StreamParam audio_;
 	StreamParam video_;

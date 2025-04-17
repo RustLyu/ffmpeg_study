@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
-project(MyFFmpegProject)
+
+set(PROJECT "realplayer")
+project(${PROJECT})
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -15,7 +17,7 @@ link_directories(${FFMPEG_LIB_DIR} ${SDL_LIB_DIR})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")
 
-add_executable(MyFFmpegProject main.cpp
+add_executable(${PROJECT} main.cpp
 	common.h
 	decode.h decode.cpp
     encode.h encode.cpp 
@@ -35,4 +37,4 @@ add_executable(MyFFmpegProject main.cpp
 	"VideoRender.h" "VideoRender.cpp"
 	)
 
-target_link_libraries(MyFFmpegProject avcodec avformat avutil swscale SDL2 swresample)
+target_link_libraries(${PROJECT} avcodec avformat avutil swscale SDL2 swresample)

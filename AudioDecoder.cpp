@@ -38,7 +38,7 @@ void AudioDecoder::start()
         while (1)
         {
             auto buf = vs_->get_audio_buffer();
-            AVPacket pkt = vs_->pop_audio();
+            AVPacket pkt = vs_->pop_audio_pkt();
             avcodec_send_packet(vs_->get_audio_param().codec_ctx, &pkt);
             while (auto ret = avcodec_receive_frame(vs_->get_audio_param().codec_ctx, frame) == 0) {
                 if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {

@@ -51,9 +51,8 @@ int VideoState::start()
 
 void VideoState::push(AVPacket* pkt)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
-	if (!pkt) return;
-
+	if (!pkt) 
+		return;
 	if (pkt->stream_index == video_.index)
 	{
 		video_.pkt_queue.push(*pkt);
@@ -64,15 +63,13 @@ void VideoState::push(AVPacket* pkt)
 	}
 }
 
-AVPacket VideoState::pop_audio()
+AVPacket VideoState::pop_audio_pkt()
 {
-	std::lock_guard<std::mutex> lock(mutex_);
 	return audio_.pkt_queue.pop();
 }
 
-AVPacket VideoState::pop_video()
+AVPacket VideoState::pop_video_pkt()
 {
-	std::lock_guard<std::mutex> lock(mutex_);
 	return video_.pkt_queue.pop();
 }
 
@@ -84,12 +81,14 @@ AVPacket VideoState::pop_video()
 
 void VideoState::push_video(AVFrame& f)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
 	video_buffer_.push(f);
+}
+
+const AVFrame& VideoState::get_video_frame() {
+	return video_buffer_.pop();
 }
 
 void VideoState::set_av_formate_ctx(AVFormatContext* ctx)
 {
-	std::lock_guard<std::mutex> lock(mutex_);
 	ctx_ = ctx;
 }

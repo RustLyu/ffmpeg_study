@@ -70,7 +70,7 @@ void VideoDecoder::decode_thread()
 
     while (running_)
     {
-        AVPacket pkt = vs_->pop_video();
+        AVPacket pkt = vs_->pop_video_pkt();
         if (avcodec_send_packet(vs_->get_video_param().codec_ctx, &pkt) < 0) {
             continue;
         }
