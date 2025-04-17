@@ -73,6 +73,29 @@ void VideoRender::start()
             }
 
             auto frameYUV = vs_->get_video_frame();
+            double frame_pts = frameYUV.pts * av_q2d(codec_ctx->time_base);
+            double audio_time = vs_->get_audio_clock();
+            std::cout << "frame_pts:" << frame_pts << " audio_time:" << audio_time << std::endl;
+            // 动态调整视频帧渲染
+            if (!isnan(frame_pts)) {
+                double diff = frame_pts - audio_time;
+                if (diff > 0) {
+                    // 等待到目标时间（留 10ms 余量避免过度等待）
+                    double wait_time = diff - 0.01;
+                    if (wait_time > 0) {
+                        double wait_time = diff - 0.01;
+                        std::cout << "diff:" << diff << std::endl;
+                        //auto wait_duration = std::chrono::duration<double>(wait_time);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    }
+                }
+                else if (diff < -0.1) {
+                    // 丢弃落后过多的帧
+                    //av_frame_unref(&frameYUV);
+                    continue;
+                }
+            }
+
             SDL_UpdateYUVTexture(texture_, nullptr, frameYUV.data[0], frameYUV.linesize[0],
                 frameYUV.data[1], frameYUV.linesize[1], frameYUV.data[2], frameYUV.linesize[2]);
 

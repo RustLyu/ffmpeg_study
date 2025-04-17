@@ -79,6 +79,7 @@ void VideoDecoder::decode_thread()
         while ((ret = avcodec_receive_frame(vs_->get_video_param().codec_ctx, frame.get())) >= 0) {
             sws_scale(sws_, (uint8_t const* const*)frame->data, frame->linesize, 0,
                 vs_->get_video_param().codec_ctx->height, frameYUV->data, frameYUV->linesize);
+            frameYUV->pts = frame->pts;
             vs_->push_video(*frameYUV);
         }
 

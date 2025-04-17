@@ -65,7 +65,22 @@ public:
 	}
 
 	void set_av_formate_ctx(AVFormatContext* ctx);
-
+	void set_audio_played_samples(uint64_t n)
+	{
+		audio_played_samples_ = n;
+	}
+	uint64_t get_audio_played_samples()
+	{
+		return audio_played_samples_;
+	}
+	void add_audio_played_samples(uint64_t n)
+	{
+		audio_played_samples_ += n;
+	}
+	double get_audio_clock() 
+	{
+		return (double)audio_played_samples_ / (audio_.codec_ctx->sample_rate * audio_.codec_ctx->ch_layout.nb_channels);
+	}
 
 private:
 	AVFormatContext* ctx_;
@@ -73,6 +88,7 @@ private:
 	StreamParam video_;
 	RingBuffer* audio_buffer_;
 	PacketQueue<AVFrame> video_buffer_;
+	uint64_t audio_played_samples_;
 };
 
 #endif //VIDEO_STATE_H

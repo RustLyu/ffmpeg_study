@@ -9,7 +9,7 @@
 
 VideoState::VideoState()
     : audio_buffer_(new RingBuffer(192000))
-    , ctx_(nullptr)
+    , ctx_(nullptr), audio_played_samples_(0)
 {
 }
 
@@ -42,6 +42,7 @@ int VideoState::start()
 		video_.codec_ctx = avcodec_alloc_context3(video_.codec);
 		avcodec_parameters_to_context(video_.codec_ctx, video_.param);
 		ret = avcodec_open2(video_.codec_ctx, video_.codec, nullptr);
+		video_.codec_ctx->time_base = ctx_->streams[video_.index]->time_base;
 		if (ret != 0)
 			return -1;
 	}

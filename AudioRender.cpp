@@ -29,7 +29,7 @@ static void audio_callback_render(void* userdata, Uint8* stream, int len) {
     
     buf->read(buffer.data(), len);
     SDL_MixAudioFormat(stream, reinterpret_cast<Uint8*>(buffer.data()), AUDIO_S16SYS, len, SDL_MIX_MAXVOLUME);
-
+    vs->add_audio_played_samples(len / (2 * vs->get_audio_param().codec_ctx->ch_layout.nb_channels));
 #ifdef _DEBUG
     //std::cout << "Audio buffer read: " << len << " bytes" << std::endl;
 #endif
