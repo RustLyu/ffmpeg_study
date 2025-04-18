@@ -53,13 +53,13 @@ void AudioDecoder::start()
                 memset(buffer, 0 , 192000);
                 swr_convert(swr_, &buffer, out_buffer_size,
                     (const uint8_t**)frame->data, frame->nb_samples);
-                //std::cout << "write:" << size << std::endl;
+                //std::cout << "audio pts:" << frame->pts * av_q2d(vs_->get_audio_param().codec_ctx->time_base) << std::endl;
                 int write_size = -1;
                 do
                 {
                     write_size = buf->write((char*)buffer, out_buffer_size);
-                    if (write_size < 0)
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    //if (write_size < 0)
+                    //    std::this_thread::sleep_for(std::chrono::microseconds(1));
                 } 
                 while (write_size < 0);
             }

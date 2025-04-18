@@ -73,13 +73,14 @@ public:
 	{
 		return audio_played_samples_;
 	}
-	void add_audio_played_samples(uint64_t n)
+	void add_audio_played_samples(double n)
 	{
 		audio_played_samples_ += n;
 	}
 	double get_audio_clock() 
 	{
-		return (double)audio_played_samples_ / (audio_.codec_ctx->sample_rate * audio_.codec_ctx->ch_layout.nb_channels);
+		return (double)audio_played_samples_ / (get_audio_param().codec_ctx->sample_rate * get_audio_param().codec_ctx->ch_layout.nb_channels
+			* av_get_bytes_per_sample(AV_SAMPLE_FMT_S16));
 	}
 
 private:
